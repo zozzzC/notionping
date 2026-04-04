@@ -10,17 +10,50 @@ import { config } from "@/config";
 import { deployCommands } from "./deployCommands";
 
 const client = Object.assign(
-  new Client({ intents: [GatewayIntentBits.Guilds] }),
+  new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent,
+    ],
+  }),
   {
     commands: new Collection<string, ApplicationCommand>(),
   },
 );
 
+(async () => await deployCommands(client.commands))();
+
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
-console.log(config.GUILD_ID);
-client.login(config.DISCORD_TOKEN);
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
 
-(async () => await deployCommands())();
+  const command = interaction.client.commands.get(interaction.commandName);
+
+  if (!command) {
+    console.error(`No command matching ${interaction.commandName} was found.`);
+    return;
+  }
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({
+        content: "There was an error while executing this command!",
+        flags: MessageFlags.Ephemeral,
+      });
+    } else {
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+  }
+});
+
+client.login(config.DISCORD_TOKEN);
