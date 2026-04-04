@@ -1,4 +1,6 @@
 import {
+  ApplicationCommand,
+  Collection,
   REST,
   RESTPostAPIApplicationCommandsJSONBody,
   Routes,
@@ -14,11 +16,13 @@ const __dirname = path.dirname(__filename);
 console.log(`Setting up REST with discord token ${config.DISCORD_TOKEN}`);
 
 // and deploy your commands!
-export const deployCommands = async () => {
-  const commands: RESTPostAPIApplicationCommandsJSONBody[] = [];
+export const deployCommands = async (
+  commands: Collection<string, ApplicationCommand>,
+) => {
   // Grab all the command folders from the commands directory you created earlier
   const foldersPath = path.join(__dirname, "commands");
   const commandFolders = fs.readdirSync(foldersPath);
+  const commandsJson = [];
 
   for (const folder of commandFolders) {
     // Grab all the command files from the commands directory you created earlier
@@ -32,7 +36,8 @@ export const deployCommands = async () => {
       const { default: command } = await import(filePath);
       if ("data" in command && "execute" in command) {
         console.log(`Pushing the command at ${filePath}...`);
-        commands.push(command.data.toJSON());
+        commandsJson.push(command.data.toJSON());
+        commands.set(command.data.name, command);
       } else {
         console.log(
           `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
@@ -40,12 +45,9 @@ export const deployCommands = async () => {
       }
     }
   }
-
   const rest = new REST().setToken(config.DISCORD_TOKEN);
   try {
-    console.log(
-      `Started refreshing ${commands.length} application (/) commands.`,
-    );
+    console.log(`Started refreshing application (/) commands.`);
 
     // The put method is used to fully refresh all commands in the guild with the current set
     const data = await rest.put(
@@ -53,7 +55,7 @@ export const deployCommands = async () => {
         config.DISCORD_CLIENT_ID,
         config.GUILD_ID!,
       ),
-      { body: commands },
+      { body: commandsJson },
     );
 
     console.log(
