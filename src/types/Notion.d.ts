@@ -89,23 +89,47 @@ interface IObjectUser {
   id: string;
 }
 
-interface INotionProps = {
-};
+interface IDateItem {
+  id: string;
+  type: "date";
+  date: null | {
+    start: string | null;
+    end: string | null;
+  };
+}
 
-//
-// type rawNotionExtraCostProps = {
-//   name: titleItem;
-//   type: selectItem;
-//   price: numberItem;
-// };
+interface IStatusItem {
+  id: string;
+  type: "status";
+  status: {
+    id: string;
+    name: string;
+  };
+}
 
-interface INumberItem  {
+interface IPeopleItem {
+  id: string;
+  type: "people";
+  people: {
+    object: string;
+    id: string;
+    name: string;
+  }[];
+}
+interface INumberItem {
   id: string;
   type: number;
   number: number;
-};
+}
 
-interface ISelectItem  {
+interface IRelationItem {
+  id: string;
+  type: "relation";
+  relation: { id: string }[];
+  has_more: boolean;
+}
+
+interface ISelectItem {
   id: string;
   type: "select";
   select: {
@@ -113,21 +137,21 @@ interface ISelectItem  {
     name: string;
     color: string;
   };
-};
+}
 
 interface IMultiSelectItem {
   id: string;
   type: "multi_select";
   multi_select: IMultiSelectOptions[];
-};
+}
 
-interface IMultiSelectOptions  {
+interface IMultiSelectOptions {
   id: string;
   name: string;
   color: string;
-};
+}
 
-interface IRichtextItem  {
+interface IRichtextItem {
   id: string;
   type: "rich_text";
   rich_text:
@@ -151,9 +175,9 @@ interface IRichtextItem  {
         },
       ]
     | [];
-};
+}
 
-interface FilesAndMediaItem  {
+interface FilesAndMediaItem {
   id: string;
   type: "files";
   files: Array<{
@@ -164,7 +188,7 @@ interface FilesAndMediaItem  {
     name: StringRequest;
     type?: "file";
   }>;
-};
+}
 
 interface ITitle {
   id: string;
@@ -188,10 +212,10 @@ interface ITitle {
       href: null | string;
     },
   ];
-};
+}
 
 interface ICheckbox {
   id: string;
   type: "checkbox";
   checkbox: boolean;
-};
+}
