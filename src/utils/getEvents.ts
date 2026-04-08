@@ -33,29 +33,35 @@ export async function getEvents(
 
     const res: IEventsFormat[] = [];
     for (const page of events.results) {
+      console.log(page);
       const typedPage = page as INotionPage<IEventsProps>;
-      let statusFormat: string = typedPage.properties.Status.status.name;
-      switch (statusFormat) {
-        case "Not started":
-          statusFormat = `🔴`;
-          break;
-        case "In progress":
-          statusFormat = `🟡`;
-          break;
-        default:
-          statusFormat = `🟢`;
-          break;
+      let status = typedPage.properties.Status.status;
+      let statusFormat = "";
+      if (status == null) {
+        statusFormat = "";
+      } else {
+        switch (status.name) {
+          case "Not started":
+            statusFormat = `🔴`;
+            break;
+          case "In progress":
+            statusFormat = `🟡`;
+            break;
+          default:
+            statusFormat = `🟢`;
+            break;
+        }
       }
       res.push({
         status: statusFormat ?? "",
         name: typedPage.properties.Name.title[0].plain_text,
-        dueDate: typedPage.properties.Date?.date?.start ?? "No date set.",
+        dueDate: typedPage.properties.Date?.date
+          ? (typedPage.properties.Date?.date?.start as string)
+          : "No date set.",
         assignedTo: typedPage.properties.Exec.people.map((p) => p.name),
       });
     }
     paginatedEvents.push([...res]);
   } while (nextPage);
-  console.log(paginatedEvents);
-  console.log(JSON.stringify(paginatedEvents));
   return paginatedEvents;
 }
