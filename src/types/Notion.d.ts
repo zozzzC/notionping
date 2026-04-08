@@ -1,6 +1,6 @@
 import { PartialUserObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
-interface NotionPage<T> {
+interface INotionPage<T> {
   parent:
     | {
         type: "database_id";
@@ -82,6 +82,16 @@ interface NotionPage<T> {
   url: string;
   public_url: string | null;
   properties: T;
+}
+
+interface IEventsProps {
+  Status: IStatusItem;
+  Name: ITitle;
+  Exec: IPeopleItem;
+  Date: IDateItem;
+  Collab: IMultiSelectItem;
+  Tasklist: IRelationItem;
+  Runsheet: IRelationItem;
 }
 
 interface IObjectUser {
