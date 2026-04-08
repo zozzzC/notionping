@@ -33,7 +33,6 @@ export async function getEvents(
 
     const res: IEventsFormat[] = [];
     for (const page of events.results) {
-      console.log(page);
       const typedPage = page as INotionPage<IEventsProps>;
       let status = typedPage.properties.Status.status;
       let statusFormat = "";
