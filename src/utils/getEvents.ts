@@ -1,4 +1,4 @@
-import { notion } from "./Notion";
+import { notion } from "./getRelation";
 import { config } from "@/config";
 import { IEventsProps, INotionPage } from "@/types/Notion";
 
