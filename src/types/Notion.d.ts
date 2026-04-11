@@ -94,6 +94,16 @@ interface IEventsProps {
   Runsheet: IRelationItem;
 }
 
+interface ITasksProps {
+  Status: IStatusItem;
+  Name: ITitle;
+  Exec: IPeopleItem;
+  Due: IDateItem;
+  Group: IMultiSelectItem;
+  Type: IMultiSelectItem;
+  Event: IRelationItem;
+}
+
 interface IObjectUser {
   object: "user";
   id: string;
