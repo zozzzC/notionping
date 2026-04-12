@@ -2,19 +2,25 @@ import {
   ApplicationCommand,
   Client,
   Collection,
+  CommandInteraction,
+  EmbedBuilder,
   Events,
   GatewayIntentBits,
   MessageFlags,
 } from "discord.js";
 import { config } from "@/config";
 import { deployCommands } from "./deployCommands";
+import { getTodaysDueTasks } from "./utils/sendDueTask";
 
-const client = Object.assign(
+export const client = Object.assign(
   new Client({
     intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildMembers,
       GatewayIntentBits.MessageContent,
+      GatewayIntentBits.DirectMessageReactions,
+      GatewayIntentBits.DirectMessages,
     ],
   }),
   {
@@ -57,3 +63,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.login(config.DISCORD_TOKEN);
+
+//TODO: this needs to go in a cron job
+(async () => {
+  const todaysDueTasks = await getTodaysDueTasks();
+  for (const task of todaysDueTasks) {
+    const embed = new EmbedBuilder().setTitle("Due Today").addFields({
+      name: `${task.taskStatus} ${task.taskName}`,
+      value: `${task.taskEvent} | ${task.taskGroup} - ${task.taskType}`,
+    });
+    //TODO: make completed button
+    // const completed = new ButtonBuilder().setCustomId().co
+
+    client.users.send(task.exec, { embeds: [embed] });
+  }
+})();
