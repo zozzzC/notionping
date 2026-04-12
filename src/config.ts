@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import configFile from "config.json";
 
 if (process.env.NODE_ENV == "production") {
   dotenv.config({ path: ".env.production" });
@@ -13,13 +14,15 @@ const {
   GUILD_ID,
   NOTION_DB_ID,
   NOTION_TOKEN,
+  EXEC_ROLE_ID,
 } = process.env;
 if (
   !DISCORD_TOKEN ||
   !DISCORD_CLIENT_ID ||
   !GUILD_ID ||
   !NOTION_DB_ID ||
-  !NOTION_TOKEN
+  !NOTION_TOKEN ||
+  !EXEC_ROLE_ID
 ) {
   throw new Error("Missing env variables. See .env.example for all envs.");
 }
@@ -30,4 +33,6 @@ export const config = {
   GUILD_ID: GUILD_ID!,
   NOTION_DB_ID: NOTION_DB_ID!,
   NOTION_TOKEN: NOTION_TOKEN!,
+  EXEC_ROLE_ID: EXEC_ROLE_ID!,
+  DISCORD_CONFIG: configFile,
 };
