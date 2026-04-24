@@ -12,7 +12,7 @@ export async function getExecNotionFromDiscord() {
   }
 
   for (const key of execMap.keys()) {
-    execMap.set(key, resultsMap.get(key));
+    execMap.set(key, resultsMap.get(execMap.get(key)));
   }
 
   return execMap;
