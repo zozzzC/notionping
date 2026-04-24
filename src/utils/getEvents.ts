@@ -8,6 +8,25 @@ interface IEventsFormat {
   dueDate: string;
   assignedTo: string[];
 }
+
+export async function getEvent(event: string) {
+  const associatedEvent = await notion.search({
+    query: event,
+    filter: {
+      property: "object",
+      value: "page",
+    },
+  });
+  let eventId = null;
+  if (associatedEvent.results.length === 0) {
+    console.error("Cannot find an event with the corresponding name.");
+    return undefined;
+  } else {
+    console.log(JSON.stringify(associatedEvent.results[0]));
+    eventId = associatedEvent.results[0].id;
+  }
+  return eventId;
+}
 export async function getEvents(
   active: boolean = false,
 ): Promise<IEventsFormat[][]> {
