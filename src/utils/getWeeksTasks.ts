@@ -45,6 +45,12 @@ export async function getWeekTasks(): Promise<IWeekTasks[]> {
         this_week: {},
       },
     },
+    sorts: [
+      {
+        property: "Due",
+        direction: "ascending",
+      },
+    ],
   });
   //TODO: change this to an individual DM instead (look at sendDueTask for more info on how to do that)
   const statusMap = await getStatusGroup();
