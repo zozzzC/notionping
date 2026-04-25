@@ -19,6 +19,7 @@ import { deployCommands } from "./deployCommands";
 import { getTodaysDueTasks } from "./utils/sendDueTask";
 import { getWeekTasks } from "./utils/getWeeksTasks";
 import completeTask from "./utils/completeTask";
+import { CronJob } from "cron";
 
 interface ClientWithCommand extends Client {
   commands: Collection<string, any>;
@@ -42,6 +43,7 @@ export const client = Object.assign(
 
 if (process.env.NODE_ENV !== "test") {
   console.log("Node env is not test, it is: " + process.env.NODE_ENV);
+
   (async () => await deployCommands(client.commands))();
   client.once(Events.ClientReady, (readyClient) => {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
@@ -81,10 +83,44 @@ if (process.env.NODE_ENV !== "test") {
 
   client.login(config.DISCORD_TOKEN);
 
-  //TODO: this needs to go in a cron job
-  (async () => {
+  const job = new CronJob("0 9 * * 1", async function () {
+    const weekTasks = await getWeekTasks();
+    const execTaskMap = new Map();
+    for (const t of weekTasks) {
+      if (execTaskMap.has(t.exec)) {
+        const tasksArray = execTaskMap.get(t.exec);
+        tasksArray.push({
+          name: `${t.taskStatus} ${t.taskName}`,
+          value: `${t.taskDue} ${t.taskEvent ? `| ${t.taskEvent[0]}` : ``}
+                ${t.taskType ?? ""}`,
+        });
+        execTaskMap.set(t.exec, tasksArray);
+      } else {
+        const tasksArray = [
+          {
+            name: `${t.taskStatus} ${t.taskName}`,
+            value: `${t.taskDue} ${t.taskEvent ? `| ${t.taskEvent[0]}` : ``}
+                ${t.taskType ?? ""}`,
+          },
+        ];
+        execTaskMap.set(t.exec, tasksArray);
+      }
+    }
+    for (const key of execTaskMap.keys()) {
+      const tasks = execTaskMap.get(key);
+      const embed = new EmbedBuilder()
+        .setTitle("This Week's Tasks")
+        .addFields(tasks);
+      client.users.send(key, { embeds: [embed] });
+    }
+  });
+
+  job.start();
+
+  const weeklyJob = new CronJob("0 9 * * *", async function () {
     const todaysDueTasks = await getTodaysDueTasks();
     //run daily at 9
+
     for (const task of todaysDueTasks) {
       const embed = new EmbedBuilder().setTitle("Due Today").addFields({
         name: `${task.taskStatus} ${task.taskName}`,
@@ -126,36 +162,7 @@ if (process.env.NODE_ENV !== "test") {
         await message.edit({ components: [] });
       });
     }
+  });
 
-    //TODO: run every monday at 9
-    const weekTasks = await getWeekTasks();
-    const execTaskMap = new Map();
-    for (const t of weekTasks) {
-      if (execTaskMap.has(t.exec)) {
-        const tasksArray = execTaskMap.get(t.exec);
-        tasksArray.push({
-          name: `${t.taskStatus} ${t.taskName}`,
-          value: `${t.taskDue} ${t.taskEvent ? `| ${t.taskEvent[0]}` : ``}
-                ${t.taskType ?? ""}`,
-        });
-        execTaskMap.set(t.exec, tasksArray);
-      } else {
-        const tasksArray = [
-          {
-            name: `${t.taskStatus} ${t.taskName}`,
-            value: `${t.taskDue} ${t.taskEvent ? `| ${t.taskEvent[0]}` : ``}
-                ${t.taskType ?? ""}`,
-          },
-        ];
-        execTaskMap.set(t.exec, tasksArray);
-      }
-    }
-    for (const key of execTaskMap.keys()) {
-      const tasks = execTaskMap.get(key);
-      const embed = new EmbedBuilder()
-        .setTitle("This Week's Tasks")
-        .addFields(tasks);
-      client.users.send(key, { embeds: [embed] });
-    }
-  })();
+  weeklyJob.start();
 }
