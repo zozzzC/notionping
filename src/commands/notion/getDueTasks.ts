@@ -3,7 +3,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import { getRelation, notion } from "@/utils/Notion";
+import { getRelation, notion } from "@/utils/getRelation";
 import { config } from "@/config";
 import {
   DataSourceObjectResponse,
@@ -20,7 +20,8 @@ import {
   IStatusItem,
   ITitle,
 } from "@/types/Notion";
-//TODO: getTasksByEvent function
+//TODO: get tasks by event function
+
 export default {
   data: new SlashCommandBuilder()
     .setName("getduetasks")
@@ -156,7 +157,8 @@ async function formatTasks(
     const nameProperty = e.properties["Name"] as ITitle;
     const dateProperty = e.properties["Date"] as IDateItem;
     const statusProperty = e.properties["Status"] as IStatusItem;
-    const relationProperty = e.properties["Relation"] as IRelationItem;
+    const relationProperty = e.properties["Event"] as IRelationItem;
+    console.log(JSON.stringify(e.properties));
 
     let statusFormat = statusProperty.status.name;
     switch (statusFormat) {
@@ -171,36 +173,12 @@ async function formatTasks(
         break;
     }
     const assignedProperty = e.properties["Assigned"] as IPeopleItem;
-    taskNames.push(nameProperty.title[0].plain_text);
-    console.log(
-      JSON.stringify({
-        status: statusFormat ?? "",
-        name: nameProperty.title[0].plain_text ?? "",
-        dueDate: showDate
-          ? (dateProperty.date?.start ?? "No due date set.")
-          : "",
-        assignedTo: assignedProperty.people.map((p) => p.name),
-        event: (
-          await getRelation(
-            config.NOTION_DB_ID,
-            "Relation",
-            relationProperty.relation,
-          )
-        )[0],
-      }),
-    );
     const formattedTask = {
       status: statusFormat ?? "",
       name: nameProperty.title[0].plain_text ?? "",
       dueDate: showDate ? (dateProperty.date?.start ?? "No due date set.") : "",
       assignedTo: assignedProperty.people.map((p) => p.name),
-      event: (
-        await getRelation(
-          config.NOTION_DB_ID,
-          "Relation",
-          relationProperty.relation,
-        )
-      )[0],
+      event: (await getRelation(relationProperty.relation))[0],
     };
     formattedTasks.push(formattedTask);
   }

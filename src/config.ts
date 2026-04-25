@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
-import configFile from "config.json";
+import configFile from "@/config.json";
 
 if (process.env.NODE_ENV == "production") {
   dotenv.config({ path: ".env.production" });
 } else {
-  console.log("Using developement environment.");
+  console.log("Using development/test environment.");
   dotenv.config({ path: ".env.development" });
 }
 

@@ -1,8 +1,5 @@
 import { getEvent } from "@/utils/getEvents";
-import {
-  getExecDiscordFromNotion,
-  getExecNotionFromDiscord,
-} from "@/utils/getExecDiscord";
+import { getExecNotionFromDiscord } from "@/utils/getExecDiscord";
 import { notion } from "@/utils/getRelation";
 import { parseDate } from "chrono-node";
 import { config } from "@/config";

@@ -3,18 +3,10 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChatInputCommandInteraction,
-  CommandInteraction,
   ComponentType,
-  EmbedBuilder,
   InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
-import { notion } from "@/utils/getRelation";
-import { config } from "@/config";
-import { IMultiSelectItem, INotionPage, ITasksProps } from "@/types/Notion";
-import getStatusGroup from "@/utils/getStatusGroup";
-import { getRelation } from "@/utils/getRelation";
-import { getExecDiscordFromNotion } from "@/utils/getExecDiscord";
 import { readFile, writeFile } from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -38,16 +30,11 @@ export default {
 
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
-    //NOTE: this command only works in a guild, not in dms.
+
     if (!interaction.guild) {
       return interaction.reply("This command can only be used in the server.");
     }
 
-    const interactionUser = await interaction.guild!.members.fetch(
-      interaction.user.id,
-    );
-
-    //NOTE: when adding bot to server make sure you restrict who can use the / command as you only want execs to add their emails into this.
     let confirmed = false;
     const notionId = interaction.options.get("notiondisplayname", true).value;
     console.log(`NotionID: ${JSON.stringify(notionId)}`);
@@ -68,7 +55,6 @@ export default {
     });
 
     collector.on("collect", async (i) => {
-      await i.reply("Please confirm your Notion display name.");
       if (i.user.id !== interaction.user.id) {
         return await i.reply({
           content: `You are not authorised to perform this action.`,
@@ -77,10 +63,9 @@ export default {
       }
 
       if (i.customId === "confirm") {
+        await i.deferReply();
         confirmed = true;
-        //TODO: config.json dne
         readFile(__dirname + "/../../config.json", "utf8", (err, data) => {
-          // console.log(__dirname + "../../conf");
           if (err) {
             console.error(`Error reading config file: ${err}`);
           }
@@ -98,7 +83,10 @@ export default {
         });
         await message.edit({
           content: `Successfully linked ${i.user.username} with Notion user with the name ${notionId}`,
+          embeds: [],
+          components: [],
         });
+        i.deleteReply();
       }
       collector.stop();
     });

@@ -102,6 +102,7 @@ export async function getTodaysDueTasks() {
             taskDue: taskDue,
             taskType: taskType,
             taskGroup: taskGroup,
+            taskId: typedTask.id,
           });
         } else {
           console.error(

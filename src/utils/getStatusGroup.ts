@@ -1,5 +1,5 @@
 import { INotionPage, IStatusItem } from "@/types/Notion";
-import { notion } from "utils/getRelation";
+import { notion } from "@/utils/getRelation";
 import { config } from "@/config";
 export default async function getStatusGroup() {
   const notionRes = await notion.dataSources.retrieve({
