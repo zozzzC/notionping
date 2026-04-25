@@ -15,7 +15,6 @@ import {
   User,
 } from "discord.js";
 import getUserFromDiscordId from "@/utils/getUserFromDiscordId";
-import { client } from "@/index";
 
 export default {
   data: new SlashCommandBuilder()
@@ -58,7 +57,7 @@ export default {
       due: interaction.options.getString("due") ?? undefined,
       event: interaction.options.getString("event") ?? undefined,
     };
-    const res = await addTask(interaction, taskProps);
+    const res = await addTask(taskProps);
     if (res == undefined) {
       const embed = new EmbedBuilder().setTitle("New Task").addFields({
         name: "Error",
@@ -79,7 +78,7 @@ export default {
   },
 };
 
-interface IAddTaskProps {
+export interface IAddTaskProps {
   task: string;
   execDiscord?: string;
   due?: string;
@@ -87,8 +86,7 @@ interface IAddTaskProps {
   discordMessage?: string;
 }
 
-async function addTask(
-  interaction: ChatInputCommandInteraction,
+export async function addTask(
   taskProps: IAddTaskProps,
 ): Promise<{ name: string; value: string } | undefined> {
   const execNotion = await getExecNotionFromDiscord();
@@ -101,7 +99,6 @@ async function addTask(
     execDiscordId = eDi;
     execDiscordUsername = eDu;
   }
-  console.log(execDiscordUsername);
 
   try {
     if (execDiscordId && !execNotion.get(execDiscordId)) {
@@ -114,7 +111,6 @@ async function addTask(
     if (due) {
       date = parseDate(due);
       if (!date) {
-        console.log("Date error");
         return {
           name: `Error`,
           value: `Could not parse provided date ${due}. Please try again.`,
@@ -134,8 +130,6 @@ async function addTask(
         };
       }
     }
-    console.log(eventId);
-    //TODO: event id isnt working
     const createProps = {
       Name: {
         title: [
@@ -155,15 +149,17 @@ async function addTask(
           },
         },
       }),
-      ...(associatedUser && {
-        Exec: {
-          people: [
-            {
-              id: associatedUser,
+      ...(associatedUser
+        ? {
+            Exec: {
+              people: [
+                {
+                  id: associatedUser,
+                },
+              ],
             },
-          ],
-        },
-      }),
+          }
+        : {}),
     };
 
     const notionPage = await notion.pages.create({
