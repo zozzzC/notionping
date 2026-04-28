@@ -1,30 +1,26 @@
 import { config } from "@/config";
 import { notion } from "./getRelation";
 export async function getExecNotionFromDiscord() {
-  const execMap = new Map(Object.entries(config.DISCORD_CONFIG));
-  const { results } = await notion.users.list({
-    start_cursor: undefined,
-    page_size: 50,
-  });
-  const resultsMap = new Map();
-  for (const r of results) {
-    resultsMap.set(r.name, r.id);
+  const newMap = new Map();
+
+  for (const [key, value] of Object.entries(config.DISCORD_CONFIG)) {
+    //@ts-ignore
+    newMap.set(key, value.notionId);
   }
 
-  for (const key of execMap.keys()) {
-    execMap.set(key, resultsMap.get(execMap.get(key)));
-  }
+  console.log(newMap);
 
-  return execMap;
+  return newMap;
 }
 export async function getExecDiscordFromNotion() {
   const execMap = new Map();
-  const discordConfig = config.DISCORD_CONFIG;
-  for (const entry in discordConfig) {
-    execMap.set(
-      config.DISCORD_CONFIG[entry as keyof typeof discordConfig],
-      entry,
-    );
+  for (const [key, value] of Object.entries(config.DISCORD_CONFIG)) {
+    console.log(value);
+    //@ts-ignore
+    execMap.set(value.notionDisplayName, key);
   }
+
+  console.log(execMap);
+
   return execMap;
 }
