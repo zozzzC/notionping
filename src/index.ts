@@ -20,6 +20,7 @@ import { getTodaysDueTasks } from "./utils/sendDueTask";
 import { getWeekTasks } from "./utils/getWeeksTasks";
 import completeTask from "./utils/completeTask";
 import { CronJob } from "cron";
+import { watchFile } from "fs";
 
 interface ClientWithCommand extends Client {
   commands: Collection<string, any>;
@@ -117,9 +118,8 @@ if (process.env.NODE_ENV !== "test") {
 
   job.start();
 
-  const weeklyJob = new CronJob("0 9 * * *", async function () {
+  const dailyJob = new CronJob("0 9 * * *", async function () {
     const todaysDueTasks = await getTodaysDueTasks();
-    //run daily at 9
 
     for (const task of todaysDueTasks) {
       const embed = new EmbedBuilder().setTitle("Due Today").addFields({
@@ -164,5 +164,5 @@ if (process.env.NODE_ENV !== "test") {
     }
   });
 
-  weeklyJob.start();
+  dailyJob.start();
 }
