@@ -70,14 +70,16 @@ export async function getEvents(
             break;
         }
       }
-      res.push({
-        status: statusFormat ?? "",
-        name: typedPage.properties.Name.title[0].plain_text,
-        dueDate: typedPage.properties.Date?.date
-          ? (typedPage.properties.Date?.date?.start as string)
-          : "No date set.",
-        assignedTo: typedPage.properties.Exec.people.map((p) => p.name),
-      });
+      if (typedPage.properties.Name.title[0]) {
+        res.push({
+          status: statusFormat ?? "",
+          name: typedPage.properties.Name.title[0].plain_text,
+          dueDate: typedPage.properties.Date?.date
+            ? (typedPage.properties.Date?.date?.start as string)
+            : "No date set.",
+          assignedTo: typedPage.properties.Exec.people.map((p) => p.name),
+        });
+      }
     }
     paginatedEvents.push([...res]);
   } while (nextPage);
