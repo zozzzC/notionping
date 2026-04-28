@@ -26,6 +26,12 @@ export default {
         .setDescription("The exec's Notion display name.")
         .setRequired(true),
     )
+    .addStringOption((option) =>
+      option
+        .setName("notionid")
+        .setDescription("The exec's Notion ID.")
+        .setRequired(true),
+    )
     .setContexts(InteractionContextType.Guild),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -36,7 +42,12 @@ export default {
     }
 
     let confirmed = false;
-    const notionId = interaction.options.get("notiondisplayname", true).value;
+    const notionId = interaction.options.get("notionid", true).value;
+    const notionDisplayName = interaction.options.get(
+      "notiondisplayname",
+      true,
+    ).value;
+
     console.log(`NotionID: ${JSON.stringify(notionId)}`);
     const confirm = new ButtonBuilder()
       .setCustomId("confirm")
@@ -46,7 +57,7 @@ export default {
       confirm,
     ]);
     const message = await interaction.editReply({
-      content: `Your Notion display name will be set to ${notionId}. Please click 'confirm' to continue.`,
+      content: `Your Notion display name will be set to ${notionDisplayName}. Please click 'confirm' to continue.`,
       components: [buttons],
     });
     const collector = message.createMessageComponentCollector({
@@ -70,7 +81,10 @@ export default {
             console.error(`Error reading config file: ${err}`);
           }
           const parsedData = JSON.parse(data);
-          parsedData[i.user.id] = notionId;
+          parsedData[i.user.id] = {
+            notionId: notionId,
+            notionDisplayName: notionDisplayName,
+          };
           writeFile(
             __dirname + "/../../config.json",
             JSON.stringify(parsedData),
@@ -82,7 +96,7 @@ export default {
           );
         });
         await message.edit({
-          content: `Successfully linked ${i.user.username} with Notion user with the name ${notionId}`,
+          content: `Successfully linked ${i.user.username} with Notion user with the name ${notionDisplayName} and id ${notionId}`,
           embeds: [],
           components: [],
         });
