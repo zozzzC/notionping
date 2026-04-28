@@ -12,6 +12,14 @@ import { getExecDiscordFromNotion } from "@/utils/getExecDiscord";
 import { client } from "@/index";
 
 export async function getTodaysDueTasks() {
+  //TODO: the date is not being properly parsed, i think this is because notion defaults to utc time.
+  let todaysDate = new Date();
+  //NOTE: the time is in nzst, maybe this could go in config but i am a bit lazy
+  const todaysDateString = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Pacific/Auckland",
+  })
+    .format(todaysDate)
+    .split(" ")[0];
   const { results } = await notion.dataSources.query({
     data_source_id: config.NOTION_DB_ID,
     filter: {
@@ -19,7 +27,7 @@ export async function getTodaysDueTasks() {
         {
           property: "Due",
           date: {
-            on_or_before: "today",
+            on_or_before: todaysDateString,
           },
         },
         {
@@ -31,6 +39,8 @@ export async function getTodaysDueTasks() {
       ],
     },
   });
+
+  console.log(JSON.stringify(results));
 
   //NOTE: notion does not allow us to query by status group, but because filtering by everything that is on or before today is expensive with large amounts of data, we assume 'Done' is the only status within the Completed group.
 
