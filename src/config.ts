@@ -1,5 +1,14 @@
 import dotenv from "dotenv";
-import configFile from "@/config.json";
+import { readFileSync } from "node:fs";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const raw = readFileSync(path.join(__dirname, "./config.json"), "utf8");
+const configFile = JSON.parse(raw);
 
 if (process.env.NODE_ENV == "production") {
   dotenv.config({ path: ".env.production" });
