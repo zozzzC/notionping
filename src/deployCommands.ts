@@ -1,10 +1,5 @@
-import {
-  ApplicationCommand,
-  Collection,
-  REST,
-  RESTPostAPIApplicationCommandsJSONBody,
-  Routes,
-} from "discord.js";
+//Taken from Discord.js docs.
+import { ApplicationCommand, Collection, REST, Routes } from "discord.js";
 import { config } from "@/config";
 import fs from "node:fs";
 import path from "node:path";
@@ -29,7 +24,7 @@ export const deployCommands = async (
     const commandsPath = path.join(foldersPath, folder);
     const commandFiles = fs
       .readdirSync(commandsPath)
-      .filter((file) => file.endsWith(".ts"));
+      .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
     // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
     for (const file of commandFiles) {
       const filePath = path.join(commandsPath, file);
@@ -57,8 +52,8 @@ export const deployCommands = async (
       ),
       { body: commandsJson },
     );
-
     console.log(
+      //@ts-ignore
       `Successfully reloaded ${data.length} application (/) commands.`,
     );
   } catch (error) {
