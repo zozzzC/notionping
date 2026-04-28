@@ -173,12 +173,13 @@ async function formatTasks(
         break;
     }
     const assignedProperty = e.properties["Assigned"] as IPeopleItem;
+    const relation = await getRelation(relationProperty.relation);
     const formattedTask = {
       status: statusFormat ?? "",
       name: nameProperty.title[0].plain_text ?? "",
       dueDate: showDate ? (dateProperty.date?.start ?? "No due date set.") : "",
       assignedTo: assignedProperty.people.map((p) => p.name),
-      event: (await getRelation(relationProperty.relation))[0],
+      event: relation ? relation[0] : "No Event Specified",
     };
     formattedTasks.push(formattedTask);
   }
