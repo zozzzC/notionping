@@ -1,8 +1,8 @@
 import { config } from "@/config";
 import { notion } from "./getRelation";
+import getNotionUser from "./getNotionUser";
 export async function getExecNotionFromDiscord() {
   const newMap = new Map();
-
   for (const [key, value] of Object.entries(config.DISCORD_CONFIG)) {
     //@ts-ignore
     newMap.set(key, value.notionId);
@@ -17,7 +17,8 @@ export async function getExecDiscordFromNotion() {
   for (const [key, value] of Object.entries(config.DISCORD_CONFIG)) {
     console.log(value);
     //@ts-ignore
-    execMap.set(value.notionDisplayName, key);
+    const notionDisplayName = await getNotionUser(value.notionId);
+    execMap.set(notionDisplayName, key);
   }
 
   console.log(execMap);
