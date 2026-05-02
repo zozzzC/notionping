@@ -1,14 +1,25 @@
 import dotenv from "dotenv";
-import { readFileSync } from "node:fs";
-import fs from "fs";
+import { watch } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+let configFile = "";
 
-const raw = readFileSync(path.join(__dirname, "./config.json"), "utf8");
-const configFile = JSON.parse(raw);
+watch(path.join(__dirname, "./config.json"), async (eventType, filePath) => {
+  if (eventType === "change") {
+    try {
+      const raw = await readFile(path.join(__dirname, "./config.json"), "utf8");
+      if (!raw.trim()) return; // skip empty writes
+      configFile = JSON.parse(raw);
+      console.log("Config reloaded:", configFile);
+    } catch (err) {
+      console.error("Failed to reload config (likely mid-write):", err);
+    }
+  }
+});
 
 if (process.env.NODE_ENV == "production") {
   dotenv.config({ path: ".env.production" });
@@ -43,5 +54,8 @@ export const config = {
   NOTION_DB_ID: NOTION_DB_ID!,
   NOTION_TOKEN: NOTION_TOKEN!,
   EXEC_ROLE_ID: EXEC_ROLE_ID!,
-  DISCORD_CONFIG: configFile,
+  //this getter function enables us to fetch the current value of configFile. this is because if we didn't do this, it would just keep the old (empty string) value and return that every time we import config.
+  get DISCORD_CONFIG() {
+    return configFile;
+  },
 };
