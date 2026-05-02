@@ -10,6 +10,7 @@ import {
 import { readFile, writeFile } from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import getNotionUser from "@/utils/getNotionUser";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,13 +19,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName("addexecconfig")
     .setDescription(
-      "Adds an exec's Notion username and Discord ID to the config.",
-    )
-    .addStringOption((option) =>
-      option
-        .setName("notiondisplayname")
-        .setDescription("The exec's Notion display name.")
-        .setRequired(true),
+      "Add your Notion ID and sync your Notion tasks with Discord.",
     )
     .addStringOption((option) =>
       option
@@ -42,13 +37,19 @@ export default {
     }
 
     let confirmed = false;
-    const notionId = interaction.options.get("notionid", true).value;
-    const notionDisplayName = interaction.options.get(
-      "notiondisplayname",
-      true,
-    ).value;
+    const notionId = interaction.options.get("notionid", true).value as string;
+    let notionDisplayName = "";
 
-    console.log(`NotionID: ${JSON.stringify(notionId)}`);
+    try {
+      notionDisplayName = await getNotionUser(notionId);
+    } catch {
+      await interaction.editReply({
+        content: `Could not find a Notion user with the user ID "${notionId}". Please try again.`,
+        components: [],
+      });
+      return;
+    }
+
     const confirm = new ButtonBuilder()
       .setCustomId("confirm")
       .setLabel("Confirm")
