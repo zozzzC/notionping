@@ -33,15 +33,38 @@ export async function getEvents(
   const paginatedEvents: IEventsFormat[][] = [];
   let nextPage = false;
   let nextCursor = undefined;
+  let todaysDate = new Date();
+  //NOTE: the time is in nzst, maybe this could go in config but i am a bit lazy
+  const todaysDateString = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Pacific/Auckland",
+  })
+    .format(todaysDate)
+    .split(" ")[0];
   do {
     const events = await notion.dataSources.query({
       data_source_id: process.env.NOTION_EVENTS_DB_ID!,
       filter: {
-        property: "Status",
-        status: {
-          does_not_equal: "Done/Archived",
-        },
+        and: [
+          {
+            property: "Status",
+            status: {
+              does_not_equal: "Done/Archived",
+            },
+          },
+          {
+            property: "Date",
+            date: {
+              on_or_after: todaysDateString,
+            },
+          },
+        ],
       },
+      sorts: [
+        {
+          property: "Date",
+          direction: "ascending",
+        },
+      ],
       page_size: 5,
       start_cursor: nextCursor,
     });
