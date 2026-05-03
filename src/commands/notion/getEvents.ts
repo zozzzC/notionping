@@ -27,7 +27,7 @@ export default {
             return { name: e.name, value: e.dueDate };
           }),
         )
-        .setDescription("Events by date.");
+        .setDescription("Upcoming Events by Date.");
       pages.push(embed);
     }
     let index = 0;
