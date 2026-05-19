@@ -182,7 +182,7 @@ export async function addTask(
     }
     console.log("create successful!");
     let res = {
-      name: `🔴 ${task}`,
+      name: ``,
       value: `\n ${event ? `${event} ` : ``}${associatedUser ? `${execDiscordUsername} ` : ``}${date ? `!${date.toISOString().split("T")[0]}` : ``}`,
     };
     return res;
