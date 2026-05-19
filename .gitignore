@@ -1,5 +1,6 @@
 .env.development
 .env
+.env.production
 config.json
 node_modules
 dist/
