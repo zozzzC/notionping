@@ -56,14 +56,14 @@ export default {
     };
     const res = await addTask(taskProps);
     if (res == undefined) {
-      const embed = new EmbedBuilder().setTitle("New Task").addFields({
+      const embed = new EmbedBuilder().setTitle("Error").addFields({
         name: "Error",
         value: "Unknown error. Please try again.",
       });
       await interaction.editReply({ embeds: [embed] });
       return;
     }
-    const embed = new EmbedBuilder().setTitle("New Task").addFields(res);
+    const embed = new EmbedBuilder().setTitle(res.name).addFields(res);
     if (exec) {
       await interaction.editReply({
         content: `<@${(await getUserFromDiscordId(exec.slice(2, -1))).execDiscordId}> you've got a new task!`,
@@ -182,8 +182,8 @@ export async function addTask(
     }
     console.log("create successful!");
     let res = {
-      name: `Successfully added task!`,
-      value: `🔴 ${task} \n ${event ? `${event} ` : ``}${associatedUser ? `${execDiscordUsername} ` : ``}${date ? `!${date.toISOString().split("T")[0]}` : ``}`,
+      name: `🔴 ${task}`,
+      value: `\n ${event ? `${event} ` : ``}${associatedUser ? `${execDiscordUsername} ` : ``}${date ? `!${date.toISOString().split("T")[0]}` : ``}`,
     };
     return res;
   } catch (err) {
