@@ -10,12 +10,38 @@ interface IEventsFormat {
 }
 
 export async function getEvent(event: string) {
-  const associatedEvent = await notion.search({
-    query: event,
+  let todaysDate = new Date();
+  //NOTE: the time is in nzst, maybe this could go in config but i am a bit lazy
+  const todaysDateString = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Pacific/Auckland",
+  })
+    .format(todaysDate)
+    .split(" ")[0];
+  const associatedEvent = await notion.dataSources.query({
+    data_source_id: process.env.NOTION_EVENTS_DB_ID!,
     filter: {
-      property: "object",
-      value: "page",
+      and: [
+        {
+          property: "Name",
+          title: {
+            equals: event,
+          },
+        },
+        {
+          property: "Date",
+          date: {
+            on_or_after: todaysDateString,
+          },
+        },
+      ],
     },
+    sorts: [
+      {
+        property: "Date",
+        direction: "ascending",
+      },
+    ],
+    page_size: 5,
   });
   let eventId = null;
   if (associatedEvent.results.length === 0) {
