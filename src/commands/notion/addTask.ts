@@ -143,7 +143,7 @@ export async function addTask(
           date: {
             start: date.toISOString().split("T")[0],
             end: null,
-            time_zone: null,
+            time_zone: "Pacific/Auckland",
           },
         },
       }),
