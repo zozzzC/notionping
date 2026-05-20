@@ -1,4 +1,5 @@
 import { getEvent } from "@/utils/getEvents";
+import { DateTime } from "luxon";
 import { getExecNotionFromDiscord } from "@/utils/getExecDiscord";
 import { notion } from "@/utils/getRelation";
 import { parseDate } from "chrono-node";
@@ -108,12 +109,16 @@ export async function addTask(
     let associatedUser, eventId, date;
     if (due) {
       date = parseDate(due);
+      console.log(date);
       if (!date) {
         return {
           name: `Error`,
           value: `Could not parse provided date ${due}. Please try again.`,
         };
       }
+      date = DateTime.fromJSDate(date as Date)
+        .setZone("Pacific/Auckland")
+        .toISO();
     }
 
     if (execDiscordId) {
@@ -141,9 +146,9 @@ export async function addTask(
       ...(date && {
         Due: {
           date: {
-            start: date.toISOString().split("T")[0],
+            start: date.split("T")[0],
             end: null,
-            time_zone: "Pacific/Auckland",
+            time_zone: null,
           },
         },
       }),
@@ -184,7 +189,7 @@ export async function addTask(
     console.log("create successful!");
     let res = {
       name: `🔴 ${task}`,
-      value: `\n ${event ? `${event} ` : ``}${associatedUser ? `${execDiscordUsername} ` : ``}${date ? `!${date.toISOString().split("T")[0]}` : ``}`,
+      value: `\n ${event ? `${event} ` : ``}${associatedUser ? `${execDiscordUsername} ` : ``}${date ? `!${date.split("T")[0]}` : ``}`,
     };
     return res;
   } catch (err) {
