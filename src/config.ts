@@ -8,6 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let configFile = "";
 
+(async () => {
+  const raw = await readFile(path.join(__dirname, "./config.json"), "utf8");
+  configFile = JSON.parse(raw);
+})();
+
 watch(path.join(__dirname, "./config.json"), async (eventType, filePath) => {
   if (eventType === "change") {
     try {
