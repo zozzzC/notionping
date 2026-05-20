@@ -84,85 +84,97 @@ if (process.env.NODE_ENV !== "test") {
 
   client.login(config.DISCORD_TOKEN);
 
-  const job = new CronJob("0 9 * * 1", async function () {
-    const weekTasks = await getWeekTasks();
-    const execTaskMap = new Map();
-    for (const t of weekTasks) {
-      if (execTaskMap.has(t.exec)) {
-        const tasksArray = execTaskMap.get(t.exec);
-        tasksArray.push({
-          name: `${t.taskStatus} ${t.taskName}`,
-          value: `${t.taskDue} ${t.taskEvent ? `| ${t.taskEvent[0]}` : ``}
-                ${t.taskType ?? ""}`,
-        });
-        execTaskMap.set(t.exec, tasksArray);
-      } else {
-        const tasksArray = [
-          {
+  const job = new CronJob(
+    "0 9 * * 1",
+    async function () {
+      const weekTasks = await getWeekTasks();
+      const execTaskMap = new Map();
+      for (const t of weekTasks) {
+        if (execTaskMap.has(t.exec)) {
+          const tasksArray = execTaskMap.get(t.exec);
+          tasksArray.push({
             name: `${t.taskStatus} ${t.taskName}`,
             value: `${t.taskDue} ${t.taskEvent ? `| ${t.taskEvent[0]}` : ``}
                 ${t.taskType ?? ""}`,
-          },
-        ];
-        execTaskMap.set(t.exec, tasksArray);
+          });
+          execTaskMap.set(t.exec, tasksArray);
+        } else {
+          const tasksArray = [
+            {
+              name: `${t.taskStatus} ${t.taskName}`,
+              value: `${t.taskDue} ${t.taskEvent ? `| ${t.taskEvent[0]}` : ``}
+                ${t.taskType ?? ""}`,
+            },
+          ];
+          execTaskMap.set(t.exec, tasksArray);
+        }
       }
-    }
-    for (const key of execTaskMap.keys()) {
-      const tasks = execTaskMap.get(key);
-      const embed = new EmbedBuilder()
-        .setTitle("This Week's Tasks")
-        .addFields(tasks);
-      client.users.send(key, { embeds: [embed] });
-    }
-  });
+      for (const key of execTaskMap.keys()) {
+        const tasks = execTaskMap.get(key);
+        const embed = new EmbedBuilder()
+          .setTitle("This Week's Tasks")
+          .addFields(tasks);
+        client.users.send(key, { embeds: [embed] });
+      }
+    },
+    null,
+    true,
+    "Pacific/Auckland",
+  );
 
   job.start();
 
-  const dailyJob = new CronJob("0 9 * * *", async function () {
-    const todaysDueTasks = await getTodaysDueTasks();
+  const dailyJob = new CronJob(
+    "0 9 * * *",
+    async function () {
+      const todaysDueTasks = await getTodaysDueTasks();
 
-    for (const task of todaysDueTasks) {
-      const embed = new EmbedBuilder().setTitle("Due Today").addFields({
-        name: `${task.taskStatus} ${task.taskName}`,
-        value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
-      });
+      for (const task of todaysDueTasks) {
+        const embed = new EmbedBuilder().setTitle("Due Today").addFields({
+          name: `${task.taskStatus} ${task.taskName}`,
+          value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
+        });
 
-      const finishedButton = new ButtonBuilder()
-        .setCustomId("finished")
-        .setLabel("Finished")
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(false);
+        const finishedButton = new ButtonBuilder()
+          .setCustomId("finished")
+          .setLabel("Finished")
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(false);
 
-      const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents([
-        finishedButton,
-      ]);
+        const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents([
+          finishedButton,
+        ]);
 
-      const message = await client.users.send(task.exec, {
-        embeds: [embed],
-        components: [buttons],
-      });
+        const message = await client.users.send(task.exec, {
+          embeds: [embed],
+          components: [buttons],
+        });
 
-      const collector = message.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: 60_000,
-      });
+        const collector = message.createMessageComponentCollector({
+          componentType: ComponentType.Button,
+          time: 60_000,
+        });
 
-      collector.on("collect", async (i) => {
-        if (i.customId === "finished") {
-          console.log("clicked finished");
-          await completeTask(task.taskId);
-          const embed = new EmbedBuilder().setTitle("Due Today").addFields({
-            name: `🟢 ${task.taskName}`,
-            value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
-          });
-          message.edit({ embeds: [embed], components: [] });
-        }
-      });
-      collector.on("end", async () => {
-        await message.edit({ components: [] });
-      });
-    }
-  });
+        collector.on("collect", async (i) => {
+          if (i.customId === "finished") {
+            console.log("clicked finished");
+            await completeTask(task.taskId);
+            const embed = new EmbedBuilder().setTitle("Due Today").addFields({
+              name: `🟢 ${task.taskName}`,
+              value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
+            });
+            message.edit({ embeds: [embed], components: [] });
+          }
+        });
+        collector.on("end", async () => {
+          await message.edit({ components: [] });
+        });
+      }
+    },
+    null,
+    true,
+    "Pacific/Auckland",
+  );
 
   dailyJob.start();
 }
