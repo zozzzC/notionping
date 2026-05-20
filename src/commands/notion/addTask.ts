@@ -63,6 +63,7 @@ export default {
       await interaction.editReply({ embeds: [embed] });
       return;
     }
+
     const embed = new EmbedBuilder().setTitle(res.name).addFields(res);
     if (exec) {
       await interaction.editReply({
@@ -182,7 +183,7 @@ export async function addTask(
     }
     console.log("create successful!");
     let res = {
-      name: ``,
+      name: `🔴 ${task}`,
       value: `\n ${event ? `${event} ` : ``}${associatedUser ? `${execDiscordUsername} ` : ``}${date ? `!${date.toISOString().split("T")[0]}` : ``}`,
     };
     return res;
