@@ -27,14 +27,19 @@ export async function getExecDiscordFromNotion() {
 }
 
 export async function getPresidentDiscord() {
-  console.log(config.DISCORD_CONFIG);
-  const newMap = new Map();
+  const res = [];
   for (const [key, value] of Object.entries(config.DISCORD_CONFIG)) {
     //@ts-ignore
     if (value.admin !== undefined) {
       //@ts-ignore
-      newMap.set(key, value.notionId);
+      if (value.admin === true) {
+        console.log("get pres");
+        console.log(key);
+        console.log(value);
+        //@ts-ignore
+        res.push({ key: key, value: value.notionId });
+      }
     }
   }
-  return newMap;
+  return res;
 }
