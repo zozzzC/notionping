@@ -20,7 +20,7 @@ import { getTodaysDueTasks } from "./utils/sendDueTask";
 import { getWeekTasks } from "./utils/getWeeksTasks";
 import completeTask from "./utils/completeTask";
 import { CronJob } from "cron";
-import { watchFile } from "fs";
+import { getPresidentDiscord } from "./utils/getExecDiscord";
 
 interface ClientWithCommand extends Client {
   commands: Collection<string, any>;
@@ -128,12 +128,15 @@ if (process.env.NODE_ENV !== "test") {
     "0 9 * * *",
     async function () {
       const todaysDueTasks = await getTodaysDueTasks();
+      console.log(todaysDueTasks);
 
       for (const task of todaysDueTasks) {
         const embed = new EmbedBuilder().setTitle("Due Today").addFields({
           name: `${task.taskStatus} ${task.taskName}`,
           value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
         });
+
+        console.log(`${task.taskStatus} ${task.taskName}`);
 
         const finishedButton = new ButtonBuilder()
           .setCustomId("finished")
@@ -149,6 +152,23 @@ if (process.env.NODE_ENV !== "test") {
           embeds: [embed],
           components: [buttons],
         });
+
+        //notify all users who said they want notifications for everything
+        const notifyUsers = await getPresidentDiscord();
+        for (const user of notifyUsers) {
+          if (user.key !== task.exec) {
+            const notifyUsersEmbed = new EmbedBuilder()
+              .setTitle("Due Today")
+              .addFields({
+                name: `${task.taskStatus} ${task.taskName}`,
+                value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
+              });
+
+            await client.users.send(user.key, {
+              embeds: [notifyUsersEmbed],
+            });
+          }
+        }
 
         const collector = message.createMessageComponentCollector({
           componentType: ComponentType.Button,
