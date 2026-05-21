@@ -20,6 +20,7 @@ export async function getTodaysDueTasks() {
   })
     .format(todaysDate)
     .split(" ")[0];
+
   const { results } = await notion.dataSources.query({
     data_source_id: config.NOTION_DB_ID,
     filter: {
@@ -39,8 +40,6 @@ export async function getTodaysDueTasks() {
       ],
     },
   });
-
-  console.log(JSON.stringify(results));
 
   //NOTE: notion does not allow us to query by status group, but because filtering by everything that is on or before today is expensive with large amounts of data, we assume 'Done' is the only status within the Completed group.
 
