@@ -25,3 +25,16 @@ export async function getExecDiscordFromNotion() {
 
   return execMap;
 }
+
+export async function getPresidentDiscord() {
+  console.log(config.DISCORD_CONFIG);
+  const newMap = new Map();
+  for (const [key, value] of Object.entries(config.DISCORD_CONFIG)) {
+    //@ts-ignore
+    if (value.admin !== undefined) {
+      //@ts-ignore
+      newMap.set(key, value.notionId);
+    }
+  }
+  return newMap;
+}
