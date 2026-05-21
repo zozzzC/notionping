@@ -2,5 +2,6 @@
 .env
 .env.production
 config.json
+config2.json
 node_modules
 dist/
