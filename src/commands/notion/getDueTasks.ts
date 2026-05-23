@@ -171,7 +171,7 @@ async function formatTasks(
         statusFormat = `🟢`;
         break;
     }
-    const assignedProperty = e.properties["Assigned"] as IPeopleItem;
+    const assignedProperty = e.properties["Exec"] as IPeopleItem;
     const relation = await getRelation(relationProperty.relation);
     const formattedTask = {
       status: statusFormat ?? "",
