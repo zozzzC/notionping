@@ -151,7 +151,6 @@ async function formatTasks(
   tasks: Array<PageObjectResponse>,
   showDate: boolean = false,
 ) {
-  const taskNames: string[] = [];
   const formattedTasks: ITasksFormat[] = [];
   for (const e of tasks) {
     const nameProperty = e.properties["Name"] as ITitle;
