@@ -125,7 +125,7 @@ if (process.env.NODE_ENV !== "test") {
   job.start();
 
   const dailyJob = new CronJob(
-    "* * * * *",
+    "0 9 * * *",
     async function () {
       const todaysDueTasks = await getTodaysDueTasks();
       console.log(todaysDueTasks);
