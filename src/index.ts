@@ -125,7 +125,7 @@ if (process.env.NODE_ENV !== "test") {
   job.start();
 
   const dailyJob = new CronJob(
-    "0 9 * * *",
+    "* * * * *",
     async function () {
       const todaysDueTasks = await getTodaysDueTasks();
       console.log(todaysDueTasks);
@@ -154,6 +154,7 @@ if (process.env.NODE_ENV !== "test") {
         });
 
         //notify all users who said they want notifications for everything
+        //TODO: make this less annoying...
         const notifyUsers = await getPresidentDiscord();
         for (const user of notifyUsers) {
           if (user.key !== task.exec) {
@@ -172,7 +173,7 @@ if (process.env.NODE_ENV !== "test") {
 
         const collector = message.createMessageComponentCollector({
           componentType: ComponentType.Button,
-          time: 60_000,
+          time: 3_600_000,
         });
 
         collector.on("collect", async (i) => {
