@@ -148,48 +148,58 @@ if (process.env.NODE_ENV !== "test") {
           finishedButton,
         ]);
 
-        const message = await client.users.send(task.exec, {
-          embeds: [embed],
-          components: [buttons],
-        });
+        try {
+          const message = await client.users.send(task.exec, {
+            embeds: [embed],
+            components: [buttons],
+          });
 
-        //notify all users who said they want notifications for everything
-        //TODO: make this less annoying...
-        const notifyUsers = await getPresidentDiscord();
-        for (const user of notifyUsers) {
-          if (user.key !== task.exec) {
-            const notifyUsersEmbed = new EmbedBuilder()
-              .setTitle("Due Today")
-              .addFields({
-                name: `${task.taskStatus} ${task.taskName}`,
+          //notify all users who said they want notifications for everything
+          //TODO: make this less annoying...
+          const notifyUsers = await getPresidentDiscord();
+          for (const user of notifyUsers) {
+            if (user.key !== task.exec) {
+              const notifyUsersEmbed = new EmbedBuilder()
+                .setTitle("Due Today")
+                .addFields({
+                  name: `${task.taskStatus} ${task.taskName}`,
+                  value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
+                });
+
+              await client.users.send(user.key, {
+                embeds: [notifyUsersEmbed],
+              });
+            }
+          }
+
+          const collector = message.createMessageComponentCollector({
+            componentType: ComponentType.Button,
+            time: 3_600_000,
+          });
+
+          collector.on("collect", async (i) => {
+            if (i.customId === "finished") {
+              i.deferUpdate();
+              console.log("clicked finished");
+              await completeTask(task.taskId);
+              collector.stop("task completed.");
+              const embed = new EmbedBuilder().setTitle("Due Today").addFields({
+                name: `🟢 ${task.taskName}`,
                 value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
               });
-
-            await client.users.send(user.key, {
-              embeds: [notifyUsersEmbed],
-            });
+              await message.edit({ embeds: [embed], components: [] });
+            }
+          });
+          collector.on("end", async () => {
+            await message.edit({ components: [] });
+          });
+        } catch (error: any) {
+          if (error.code === 50007) {
+            console.log(
+              `UserID ${task.exec} has blocked the bot or has DMs closed. Unable to send notification.`,
+            );
           }
         }
-
-        const collector = message.createMessageComponentCollector({
-          componentType: ComponentType.Button,
-          time: 3_600_000,
-        });
-
-        collector.on("collect", async (i) => {
-          if (i.customId === "finished") {
-            console.log("clicked finished");
-            await completeTask(task.taskId);
-            const embed = new EmbedBuilder().setTitle("Due Today").addFields({
-              name: `🟢 ${task.taskName}`,
-              value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
-            });
-            message.edit({ embeds: [embed], components: [] });
-          }
-        });
-        collector.on("end", async () => {
-          await message.edit({ components: [] });
-        });
       }
     },
     null,
