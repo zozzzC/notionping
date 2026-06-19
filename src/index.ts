@@ -128,7 +128,7 @@ if (process.env.NODE_ENV !== "test") {
     "0 9 * * *",
     async function () {
       const todaysDueTasks = await getTodaysDueTasks();
-      console.log(todaysDueTasks);
+      const formattedNotifyUsersTasks = [];
 
       for (const task of todaysDueTasks) {
         const embed = new EmbedBuilder().setTitle("Due Today").addFields({
@@ -155,22 +155,7 @@ if (process.env.NODE_ENV !== "test") {
           });
 
           //notify all users who said they want notifications for everything
-          //TODO: make this less annoying...
-          const notifyUsers = await getPresidentDiscord();
-          for (const user of notifyUsers) {
-            if (user.key !== task.exec) {
-              const notifyUsersEmbed = new EmbedBuilder()
-                .setTitle("Due Today")
-                .addFields({
-                  name: `${task.taskStatus} ${task.taskName}`,
-                  value: `${task.taskEvent ?? "No event specified."} | ${task.taskGroup ?? "General"} - ${task.taskType ?? "No task type specified."}`,
-                });
-
-              await client.users.send(user.key, {
-                embeds: [notifyUsersEmbed],
-              });
-            }
-          }
+          formattedNotifyUsersTasks.push(`${task.taskStatus} ${task.taskName}`);
 
           const collector = message.createMessageComponentCollector({
             componentType: ComponentType.Button,
@@ -190,6 +175,7 @@ if (process.env.NODE_ENV !== "test") {
               await message.edit({ embeds: [embed], components: [] });
             }
           });
+
           collector.on("end", async () => {
             await message.edit({ components: [] });
           });
@@ -200,6 +186,19 @@ if (process.env.NODE_ENV !== "test") {
             );
           }
         }
+      }
+
+      const notifyUsers = await getPresidentDiscord();
+      for (const user of notifyUsers) {
+        const notifyUsersEmbed = new EmbedBuilder()
+          .setTitle("All Due Today/Overdue Tasks")
+          .addFields({
+            name: ``,
+            value: formattedNotifyUsersTasks.join("\n"),
+          });
+        await client.users.send(user.key, {
+          embeds: [notifyUsersEmbed],
+        });
       }
     },
     null,
