@@ -114,7 +114,15 @@ if (process.env.NODE_ENV !== "test") {
         const embed = new EmbedBuilder()
           .setTitle("This Week's Tasks")
           .addFields(tasks);
-        client.users.send(key, { embeds: [embed] });
+        try {
+          client.users.send(key, { embeds: [embed] });
+        } catch (error: any) {
+          if (error.code === 50007) {
+            console.log(
+              `User has blocked the bot or has DMs closed. Unable to send notification.`,
+            );
+          }
+        }
       }
     },
     null,
@@ -196,9 +204,17 @@ if (process.env.NODE_ENV !== "test") {
             name: ``,
             value: formattedNotifyUsersTasks.join("\n"),
           });
-        await client.users.send(user.key, {
-          embeds: [notifyUsersEmbed],
-        });
+        try {
+          await client.users.send(user.key, {
+            embeds: [notifyUsersEmbed],
+          });
+        } catch (error: any) {
+          if (error.code === 50007) {
+            console.log(
+              `User has blocked the bot or has DMs closed. Unable to send notification.`,
+            );
+          }
+        }
       }
     },
     null,
